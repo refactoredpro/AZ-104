@@ -1,0 +1,15 @@
+{
+    "Name": "Skylines Custom RBAC",
+    "Id": "88888888-8888-8888-8888-888888888888",
+    "IsCustom": true,
+    "Description": "Custom RBAC Role for Storage Account Read Access",
+    "Actions": [
+        "Microsoft.Storage/*/read"
+    ],
+    "NotActions": [],
+    "DataActions": [],
+    "NotDataActions": [],
+    "AssignableScopes": [
+        "/subscriptions/{subscriptionId}"
+    ]
+}
