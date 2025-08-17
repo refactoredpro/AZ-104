@@ -31,7 +31,7 @@ Set-AzContext -SubscriptionId "your-subscription-id"
 
 ```powershell
 # Create a new resource group
-New-AzResourceGroup -Name 'rg-rfdemo-prod' -Location 'eastus'
+New-AzResourceGroup -Name 'rg-rfdemo-test' -Location 'eastus'
 ```
 
 ## Step 3: Create Virtual Machine
@@ -40,11 +40,11 @@ Create a VM with a single command. When prompted, provide a username and passwor
 
 ```powershell
 New-AzVm `
-    -ResourceGroupName 'rg-rfdemo-prod' `
+    -ResourceGroupName 'rg-rfdemo-test' `
     -Name 'vm-rfdemo-web01' `
     -Location 'eastus' `
     -Image 'MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition:latest' `
-    -VirtualNetworkName 'vnet-rfdemo-prod' `
+    -VirtualNetworkName 'vnet-rfdemo-test' `
     -SubnetName 'snet-rfdemo-web' `
     -SecurityGroupName 'nsg-rfdemo-web' `
     -PublicIpAddressName 'pip-rfdemo-web01' `
@@ -65,7 +65,7 @@ To test your VM, install IIS web server:
 
 ```powershell
 Invoke-AzVMRunCommand `
-    -ResourceGroupName 'rg-rfdemo-prod' `
+    -ResourceGroupName 'rg-rfdemo-test' `
     -VMName 'vm-rfdemo-web01' `
     -CommandId 'RunPowerShellScript' `
     -ScriptString 'Install-WindowsFeature -Name Web-Server -IncludeManagementTools'
@@ -75,13 +75,13 @@ Invoke-AzVMRunCommand `
 
 ```powershell
 # Get VM details
-Get-AzVM -ResourceGroupName 'rg-rfdemo-prod' -Name 'vm-rfdemo-web01'
+Get-AzVM -ResourceGroupName 'rg-rfdemo-test' -Name 'vm-rfdemo-web01'
 
 # Get public IP address
-Get-AzPublicIpAddress -ResourceGroupName 'rg-rfdemo-prod' -Name 'pip-rfdemo-web01'
+Get-AzPublicIpAddress -ResourceGroupName 'rg-rfdemo-test' -Name 'pip-rfdemo-web01'
 
 # Check VM status
-Get-AzVM -ResourceGroupName 'rg-rfdemo-prod' -Name 'vm-rfdemo-web01' -Status
+Get-AzVM -ResourceGroupName 'rg-rfdemo-test' -Name 'vm-rfdemo-web01' -Status
 ```
 
 ## Complete Script
@@ -93,15 +93,15 @@ Here's the complete simplified script:
 Connect-AzAccount
 
 # Create Resource Group
-New-AzResourceGroup -Name 'rg-rfdemo-prod' -Location 'eastus'
+New-AzResourceGroup -Name 'rg-rfdemo-test' -Location 'eastus'
 
 # Create VM (you'll be prompted for username/password)
 New-AzVm `
-    -ResourceGroupName 'rg-rfdemo-prod' `
+    -ResourceGroupName 'rg-rfdemo-test' `
     -Name 'vm-rfdemo-web01' `
     -Location 'eastus' `
     -Image 'MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition:latest' `
-    -VirtualNetworkName 'vnet-rfdemo-prod' `
+    -VirtualNetworkName 'vnet-rfdemo-test' `
     -SubnetName 'snet-rfdemo-web' `
     -SecurityGroupName 'nsg-rfdemo-web' `
     -PublicIpAddressName 'pip-rfdemo-web01' `
@@ -109,13 +109,13 @@ New-AzVm `
 
 # Optional: Install IIS web server
 Invoke-AzVMRunCommand `
-    -ResourceGroupName 'rg-rfdemo-prod' `
+    -ResourceGroupName 'rg-rfdemo-test' `
     -VMName 'vm-rfdemo-web01' `
     -CommandId 'RunPowerShellScript' `
     -ScriptString 'Install-WindowsFeature -Name Web-Server -IncludeManagementTools'
 
 # Get public IP to connect
-$publicIp = Get-AzPublicIpAddress -ResourceGroupName 'rg-rfdemo-prod' -Name 'pip-rfdemo-web01'
+$publicIp = Get-AzPublicIpAddress -ResourceGroupName 'rg-rfdemo-test' -Name 'pip-rfdemo-web01'
 Write-Host "VM Public IP: $($publicIp.IpAddress)" -ForegroundColor Green
 Write-Host "RDP: Connect using Remote Desktop to $($publicIp.IpAddress):3389" -ForegroundColor Yellow
 Write-Host "Web: Open browser to http://$($publicIp.IpAddress)" -ForegroundColor Yellow
@@ -127,7 +127,7 @@ When finished, remove all resources:
 
 ```powershell
 # Remove the entire resource group (deletes all resources)
-Remove-AzResourceGroup -Name 'rg-rfdemo-prod' -Force
+Remove-AzResourceGroup -Name 'rg-rfdemo-test' -Force
 ```
 
 ## Key Benefits of This Approach
@@ -149,12 +149,12 @@ Remove-AzResourceGroup -Name 'rg-rfdemo-prod' -Force
 
 ```powershell
 New-AzVm `
-    -ResourceGroupName 'rg-rfdemo-prod' `
+    -ResourceGroupName 'rg-rfdemo-test' `
     -Name 'vm-rfdemo-app01' `
     -Location 'eastus' `
     -Size 'Standard_B2ms' `
     -Image 'MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition:latest' `
-    -VirtualNetworkName 'vnet-rfdemo-prod' `
+    -VirtualNetworkName 'vnet-rfdemo-test' `
     -SubnetName 'snet-rfdemo-app' `
     -SecurityGroupName 'nsg-rfdemo-app' `
     -PublicIpAddressName 'pip-rfdemo-app01' `
