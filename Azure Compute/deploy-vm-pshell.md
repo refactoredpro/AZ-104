@@ -1,4 +1,4 @@
-# Azure VM Deployment with PowerShell Tutorial
+# Azure VM Deployment with PowerShell - Simplified Tutorial
 
 ## Prerequisites
 
@@ -27,259 +27,143 @@ Get-AzSubscription
 Set-AzContext -SubscriptionId "your-subscription-id"
 ```
 
-## Step 2: Define Variables
-
-Set up variables for your VM deployment:
-
-```powershell
-# Resource group and location
-$resourceGroupName = "rg-rfdemo-prod"
-$location = "East US"
-
-# VM configuration
-$vmName = "vm-rfdemo-web01"
-$vmSize = "Standard_B2s"
-$adminUsername = "rfdemo-admin"
-
-# Network configuration
-$vnetName = "vnet-rfdemo-prod"
-$subnetName = "snet-rfdemo-web"
-$nsgName = "nsg-rfdemo-web"
-$publicIpName = "pip-rfdemo-web01"
-$nicName = "nic-rfdemo-web01"
-
-# Storage
-$osDiskName = "disk-rfdemo-web01-os"
-```
-
-## Step 3: Create Resource Group
+## Step 2: Create Resource Group
 
 ```powershell
 # Create a new resource group
-New-AzResourceGroup -Name $resourceGroupName -Location $location
+New-AzResourceGroup -Name 'rg-rfdemo-prod' -Location 'eastus'
 ```
 
-## Step 4: Create Network Security Group
+## Step 3: Create Virtual Machine
+
+Create a VM with a single command. When prompted, provide a username and password to be used as the sign-in credentials for the VM:
 
 ```powershell
-# Create NSG rules
-$rdpRule = New-AzNetworkSecurityRuleConfig `
-    -Name "AllowRDP" `
-    -Description "Allow RDP" `
-    -Access Allow `
-    -Protocol Tcp `
-    -Direction Inbound `
-    -Priority 1000 `
-    -SourceAddressPrefix * `
-    -SourcePortRange * `
-    -DestinationAddressPrefix * `
-    -DestinationPortRange 3389
-
-# Create the NSG
-$nsg = New-AzNetworkSecurityGroup `
-    -ResourceGroupName $resourceGroupName `
-    -Location $location `
-    -Name $nsgName `
-    -SecurityRules $rdpRule
+New-AzVm `
+    -ResourceGroupName 'rg-rfdemo-prod' `
+    -Name 'vm-rfdemo-web01' `
+    -Location 'eastus' `
+    -Image 'MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition:latest' `
+    -VirtualNetworkName 'vnet-rfdemo-prod' `
+    -SubnetName 'snet-rfdemo-web' `
+    -SecurityGroupName 'nsg-rfdemo-web' `
+    -PublicIpAddressName 'pip-rfdemo-web01' `
+    -OpenPorts 80,3389
 ```
 
-## Step 5: Create Virtual Network
+That's it! This single command creates:
+- The virtual machine
+- Virtual network and subnet
+- Network security group with ports 80 and 3389 open
+- Public IP address
+- Network interface
+- OS disk
+
+## Step 4: Install Web Server (Optional)
+
+To test your VM, install IIS web server:
 
 ```powershell
-# Create subnet configuration
-$subnetConfig = New-AzVirtualNetworkSubnetConfig `
-    -Name $subnetName `
-    -AddressPrefix "10.0.1.0/24" `
-    -NetworkSecurityGroup $nsg
-
-# Create virtual network
-$vnet = New-AzVirtualNetwork `
-    -ResourceGroupName $resourceGroupName `
-    -Location $location `
-    -Name $vnetName `
-    -AddressPrefix "10.0.0.0/16" `
-    -Subnet $subnetConfig
+Invoke-AzVMRunCommand `
+    -ResourceGroupName 'rg-rfdemo-prod' `
+    -VMName 'vm-rfdemo-web01' `
+    -CommandId 'RunPowerShellScript' `
+    -ScriptString 'Install-WindowsFeature -Name Web-Server -IncludeManagementTools'
 ```
 
-## Step 6: Create Public IP Address
+## Step 5: Get VM Information
 
 ```powershell
-# Create public IP
-$publicIp = New-AzPublicIpAddress `
-    -ResourceGroupName $resourceGroupName `
-    -Location $location `
-    -Name $publicIpName `
-    -AllocationMethod Static `
-    -Sku Standard
-```
-
-## Step 7: Create Network Interface
-
-```powershell
-# Get the subnet
-$subnet = Get-AzVirtualNetworkSubnetConfig -Name $subnetName -VirtualNetwork $vnet
-
-# Create network interface
-$nic = New-AzNetworkInterface `
-    -ResourceGroupName $resourceGroupName `
-    -Location $location `
-    -Name $nicName `
-    -SubnetId $subnet.Id `
-    -PublicIpAddressId $publicIp.Id
-```
-
-## Step 8: Create VM Configuration
-
-```powershell
-# Get credentials for the VM
-$credential = Get-Credential -Message "Enter username and password for the VM"
-
-# Create VM configuration
-$vmConfig = New-AzVMConfig `
-    -VMName $vmName `
-    -VMSize $vmSize
-
-# Set operating system configuration
-$vmConfig = Set-AzVMOperatingSystem `
-    -VM $vmConfig `
-    -Windows `
-    -ComputerName $vmName `
-    -Credential $credential `
-    -ProvisionVMAgent `
-    -EnableAutoUpdate
-
-# Set source image
-$vmConfig = Set-AzVMSourceImage `
-    -VM $vmConfig `
-    -PublisherName "MicrosoftWindowsServer" `
-    -Offer "WindowsServer" `
-    -Skus "2022-Datacenter" `
-    -Version "latest"
-
-# Add network interface
-$vmConfig = Add-AzVMNetworkInterface `
-    -VM $vmConfig `
-    -Id $nic.Id
-
-# Set OS disk configuration
-$vmConfig = Set-AzVMOSDisk `
-    -VM $vmConfig `
-    -Name $osDiskName `
-    -CreateOption FromImage `
-    -StorageAccountType "Premium_LRS"
-```
-
-## Step 9: Deploy the Virtual Machine
-
-```powershell
-# Create the virtual machine
-Write-Host "Creating virtual machine..." -ForegroundColor Green
-New-AzVM `
-    -ResourceGroupName $resourceGroupName `
-    -Location $location `
-    -VM $vmConfig `
-    -Verbose
-```
-
-## Step 10: Verify Deployment
-
-```powershell
-# Get VM information
-Get-AzVM -ResourceGroupName $resourceGroupName -Name $vmName
+# Get VM details
+Get-AzVM -ResourceGroupName 'rg-rfdemo-prod' -Name 'vm-rfdemo-web01'
 
 # Get public IP address
-$publicIpAddress = Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -Name $publicIpName
-Write-Host "VM Public IP: $($publicIpAddress.IpAddress)" -ForegroundColor Yellow
+Get-AzPublicIpAddress -ResourceGroupName 'rg-rfdemo-prod' -Name 'pip-rfdemo-web01'
 
-# Get VM status
-Get-AzVM -ResourceGroupName $resourceGroupName -Name $vmName -Status
+# Check VM status
+Get-AzVM -ResourceGroupName 'rg-rfdemo-prod' -Name 'vm-rfdemo-web01' -Status
 ```
 
-## Complete Script Example
+## Complete Script
 
-Here's the complete script you can run all at once:
+Here's the complete simplified script:
 
 ```powershell
-# Variables
-$resourceGroupName = "rg-rfdemo-prod"
-$location = "East US"
-$vmName = "vm-rfdemo-web01"
-$vmSize = "Standard_B2s"
-$vnetName = "vnet-rfdemo-prod"
-$subnetName = "snet-rfdemo-web"
-$nsgName = "nsg-rfdemo-web"
-$publicIpName = "pip-rfdemo-web01"
-$nicName = "nic-rfdemo-web01"
-$osDiskName = "disk-rfdemo-web01-os"
-
-# Connect to Azure (if not already connected)
+# Connect to Azure
 Connect-AzAccount
 
 # Create Resource Group
-New-AzResourceGroup -Name $resourceGroupName -Location $location
+New-AzResourceGroup -Name 'rg-rfdemo-prod' -Location 'eastus'
 
-# Create NSG
-$rdpRule = New-AzNetworkSecurityRuleConfig -Name "AllowRDP" -Description "Allow RDP" -Access Allow -Protocol Tcp -Direction Inbound -Priority 1000 -SourceAddressPrefix * -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389
-$nsg = New-AzNetworkSecurityGroup -ResourceGroupName $resourceGroupName -Location $location -Name $nsgName -SecurityRules $rdpRule
+# Create VM (you'll be prompted for username/password)
+New-AzVm `
+    -ResourceGroupName 'rg-rfdemo-prod' `
+    -Name 'vm-rfdemo-web01' `
+    -Location 'eastus' `
+    -Image 'MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition:latest' `
+    -VirtualNetworkName 'vnet-rfdemo-prod' `
+    -SubnetName 'snet-rfdemo-web' `
+    -SecurityGroupName 'nsg-rfdemo-web' `
+    -PublicIpAddressName 'pip-rfdemo-web01' `
+    -OpenPorts 80,3389
 
-# Create VNet
-$subnetConfig = New-AzVirtualNetworkSubnetConfig -Name $subnetName -AddressPrefix "10.0.1.0/24" -NetworkSecurityGroup $nsg
-$vnet = New-AzVirtualNetwork -ResourceGroupName $resourceGroupName -Location $location -Name $vnetName -AddressPrefix "10.0.0.0/16" -Subnet $subnetConfig
+# Optional: Install IIS web server
+Invoke-AzVMRunCommand `
+    -ResourceGroupName 'rg-rfdemo-prod' `
+    -VMName 'vm-rfdemo-web01' `
+    -CommandId 'RunPowerShellScript' `
+    -ScriptString 'Install-WindowsFeature -Name Web-Server -IncludeManagementTools'
 
-# Create Public IP
-$publicIp = New-AzPublicIpAddress -ResourceGroupName $resourceGroupName -Location $location -Name $publicIpName -AllocationMethod Static -Sku Standard
-
-# Create NIC
-$subnet = Get-AzVirtualNetworkSubnetConfig -Name $subnetName -VirtualNetwork $vnet
-$nic = New-AzNetworkInterface -ResourceGroupName $resourceGroupName -Location $location -Name $nicName -SubnetId $subnet.Id -PublicIpAddressId $publicIp.Id
-
-# Get credentials
-$credential = Get-Credential -Message "Enter username and password for the VM"
-
-# Create VM
-$vmConfig = New-AzVMConfig -VMName $vmName -VMSize $vmSize
-$vmConfig = Set-AzVMOperatingSystem -VM $vmConfig -Windows -ComputerName $vmName -Credential $credential -ProvisionVMAgent -EnableAutoUpdate
-$vmConfig = Set-AzVMSourceImage -VM $vmConfig -PublisherName "MicrosoftWindowsServer" -Offer "WindowsServer" -Skus "2022-Datacenter" -Version "latest"
-$vmConfig = Add-AzVMNetworkInterface -VM $vmConfig -Id $nic.Id
-$vmConfig = Set-AzVMOSDisk -VM $vmConfig -Name $osDiskName -CreateOption FromImage -StorageAccountType "Premium_LRS"
-
-# Deploy VM
-New-AzVM -ResourceGroupName $resourceGroupName -Location $location -VM $vmConfig
-
-# Display results
-$publicIpAddress = Get-AzPublicIpAddress -ResourceGroupName $resourceGroupName -Name $publicIpName
-Write-Host "VM deployed successfully!" -ForegroundColor Green
-Write-Host "Public IP: $($publicIpAddress.IpAddress)" -ForegroundColor Yellow
+# Get public IP to connect
+$publicIp = Get-AzPublicIpAddress -ResourceGroupName 'rg-rfdemo-prod' -Name 'pip-rfdemo-web01'
+Write-Host "VM Public IP: $($publicIp.IpAddress)" -ForegroundColor Green
+Write-Host "RDP: Connect using Remote Desktop to $($publicIp.IpAddress):3389" -ForegroundColor Yellow
+Write-Host "Web: Open browser to http://$($publicIp.IpAddress)" -ForegroundColor Yellow
 ```
 
 ## Cleanup Resources
 
-When you're done testing, clean up resources to avoid charges:
+When finished, remove all resources:
 
 ```powershell
-# Remove the entire resource group (this deletes all resources within it)
-Remove-AzResourceGroup -Name $resourceGroupName -Force
+# Remove the entire resource group (deletes all resources)
+Remove-AzResourceGroup -Name 'rg-rfdemo-prod' -Force
 ```
 
-## Tips and Best Practices
+## Key Benefits of This Approach
 
-1. **Security**: Always use strong passwords and consider using SSH keys for Linux VMs
-2. **Cost Management**: Choose appropriate VM sizes and stop VMs when not in use
-3. **Monitoring**: Enable Azure Monitor for your VMs
-4. **Backup**: Configure Azure Backup for important VMs
-5. **Updates**: Keep your Azure PowerShell module updated with `Update-Module Az`
+1. **Simplicity**: Single command creates everything needed
+2. **Speed**: Much faster than creating each component individually
+3. **Best Practices**: Automatically follows Azure naming and security conventions
+4. **Error Prevention**: Less chance for configuration mistakes
 
-## Common VM Sizes
+## Common Parameters for New-AzVm
 
-- **Standard_B1s**: 1 vCPU, 1 GB RAM (Basic workloads)
-- **Standard_B2s**: 2 vCPUs, 4 GB RAM (Small applications)
-- **Standard_D2s_v3**: 2 vCPUs, 8 GB RAM (General purpose)
-- **Standard_D4s_v3**: 4 vCPUs, 16 GB RAM (Production workloads)
+- `-Size`: VM size (default: Standard_DS1_v2)
+- `-Credential`: Pre-create credentials instead of prompting
+- `-Image`: OS image (Windows/Linux options available)
+- `-OpenPorts`: Comma-separated list of ports to open
+- `-Zone`: Availability zone (1, 2, or 3)
+
+## Example with Custom VM Size
+
+```powershell
+New-AzVm `
+    -ResourceGroupName 'rg-rfdemo-prod' `
+    -Name 'vm-rfdemo-app01' `
+    -Location 'eastus' `
+    -Size 'Standard_B2ms' `
+    -Image 'MicrosoftWindowsServer:WindowsServer:2022-datacenter-azure-edition:latest' `
+    -VirtualNetworkName 'vnet-rfdemo-prod' `
+    -SubnetName 'snet-rfdemo-app' `
+    -SecurityGroupName 'nsg-rfdemo-app' `
+    -PublicIpAddressName 'pip-rfdemo-app01' `
+    -OpenPorts 80,443,3389
+```
 
 ## Troubleshooting
 
-If you encounter errors:
-1. Check your Azure permissions
-2. Verify subscription limits haven't been exceeded
-3. Ensure the VM size is available in your chosen region
-4. Check for naming conflicts with existing resources
+- **Authentication errors**: Run `Connect-AzAccount` again
+- **Permission errors**: Ensure you have Contributor role on the subscription
+- **VM size not available**: Try different regions or VM sizes
+- **Name conflicts**: Use unique names or add random numbers to resource names
