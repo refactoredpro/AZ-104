@@ -225,7 +225,7 @@ For a simpler deployment without Git:
 4. Set time range to **"Last 30 minutes"**
 
 
-### Step 19: Explore Custom Domain Options
+### Step 17: Explore Custom Domain Options
 **Note**: This section is for learning only - don't purchase domains for the lab
 
 1. Go to **"Custom domains"** under Settings
