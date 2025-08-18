@@ -41,21 +41,6 @@ The AZ-104 certification validates your ability to implement, manage, and monito
   - Backup and disaster recovery
   - Performance optimization
 
-## 📁 Repository Structure
-
-```
-├── 📁 labs/                    # Hands-on lab exercises
-│   ├── lab-01-identities/      # Identity and governance labs
-│   ├── lab-02-storage/         # Storage management labs
-│   ├── lab-03-compute/         # Compute resource labs
-│   ├── lab-04-networking/      # Virtual networking labs
-│   └── lab-05-monitoring/      # Monitoring and maintenance labs
-├── 📁 study-guides/            # Comprehensive study materials
-├── 📁 scripts/                 # PowerShell and Azure CLI scripts
-├── 📁 templates/               # ARM templates and Bicep files
-├── 📁 practice-exams/          # Mock exam questions
-└── 📁 resources/               # Additional learning resources
-```
 
 ## 🎓 About Refactored.pro
 
