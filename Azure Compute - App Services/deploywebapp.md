@@ -151,7 +151,7 @@ For a simpler deployment without Git:
 
 ### Step 10: Add Application Settings
 1. Return to your Web App in the Azure Portal
-2. Go to **"Configuration"** under Settings
+2. Go to **"Environment Variables"** under Settings
 3. In the **"Application settings"** tab, click **"+ New application setting"**
 4. Add these sample settings:
 
@@ -212,10 +212,7 @@ For a simpler deployment without Git:
 3. Click **"Save"**
 
 ### Step 15: View Live Logs
-1. Go to **"Log stream"** under Monitoring
-2. Keep this tab open
-3. In another tab, visit your web app URL several times
-4. Return to the log stream to see real-time access logs
+1. Go to **"Log stream"** under Monitoring and verify that you can view the log stream.
 
 ### Step 16: Review Metrics
 1. Go to **"Metrics"** under Monitoring
@@ -227,27 +224,6 @@ For a simpler deployment without Git:
 3. Click **"Add metric"** and select **"Requests"**
 4. Set time range to **"Last 30 minutes"**
 
----
-
-## Part 7: Security and SSL Configuration
-
-### Step 17: Review SSL Settings
-1. Go to **"TLS/SSL settings"** under Settings
-2. Review current configuration:
-   - **HTTPS Only**: Should be enabled for production
-   - **Minimum TLS version**: Review security settings
-3. For this lab, you can enable **"HTTPS Only"**:
-   - Toggle the switch to **"On"**
-   - Click **"Save"**
-
-### Step 18: Test HTTPS Enforcement
-1. Visit your web app using HTTP: `http://yourapp.azurewebsites.net`
-2. You should be automatically redirected to HTTPS
-3. Notice the secure lock icon in your browser
-
----
-
-## Part 8: Custom Domain (Optional Demo)
 
 ### Step 19: Explore Custom Domain Options
 **Note**: This section is for learning only - don't purchase domains for the lab
@@ -262,9 +238,8 @@ For a simpler deployment without Git:
 
 ---
 
-## Part 9: Testing and Troubleshooting
+### General Notes on Testing and Performance
 
-### Step 20: Test Your Web App Thoroughly
 1. **Functionality Test**:
    - Visit your web app URL
    - Verify your custom content loads correctly
@@ -275,7 +250,7 @@ For a simpler deployment without Git:
    - Check loading times and resource usage
    - Review network requests
 
-### Step 21: Practice Troubleshooting
+### Practice Troubleshooting
 1. Go to **"Diagnose and solve problems"** under Support + troubleshooting
 2. Explore available diagnostic tools:
    - **Availability and Performance**
@@ -283,15 +258,6 @@ For a simpler deployment without Git:
    - **SSL and Domains**
 3. Click on **"Availability and Performance"**
 4. Review the health check results
-
-### Step 22: View Application Insights (if available)
-1. If Application Insights was configured, go to **"Application Insights"** under Settings
-2. Explore:
-   - **Live metrics**: Real-time performance
-   - **Usage**: User interaction data
-   - **Performance**: Detailed performance analytics
-
----
 
 ## Lab Validation Checklist
 
